@@ -1,6 +1,9 @@
 package com.example.GymStats.models.entity;
 
 import com.example.GymStats.enums.Apparatus;
+import jakarta.persistence.CollectionTable;
+import jakarta.persistence.Column;
+import jakarta.persistence.ElementCollection;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
@@ -39,8 +42,14 @@ public class Point {
     @Enumerated(EnumType.STRING)
     private Apparatus apparatus;
 
+    @ElementCollection
+    @CollectionTable(name = "point_dpoints", joinColumns = @JoinColumn(name = "point_id"))
+    @Column(name = "dpoint")
     private List<Double> Dpoints;
 
+    @ElementCollection
+    @CollectionTable(name = "point_epoints", joinColumns = @JoinColumn(name = "point_id"))
+    @Column(name = "epoint")
     private List<Double> Epoints;
 
     private Double penalty;

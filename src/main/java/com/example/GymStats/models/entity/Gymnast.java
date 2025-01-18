@@ -1,5 +1,6 @@
 package com.example.GymStats.models.entity;
 
+import com.example.GymStats.enums.Category;
 import com.example.GymStats.enums.NOC;
 import jakarta.persistence.CascadeType;
 import jakarta.persistence.Entity;
@@ -39,7 +40,8 @@ public class Gymnast {
     private int bornYear;
     @Enumerated(EnumType.STRING)
     private NOC noc;
-    private String category;
+    @Enumerated(EnumType.STRING)
+    private Category category;
     @OneToMany(mappedBy = "gymnast", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Point> points;
     @ManyToMany(mappedBy = "gymnasts")
