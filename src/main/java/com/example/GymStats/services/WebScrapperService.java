@@ -9,7 +9,6 @@ import org.openqa.selenium.chrome.ChromeDriver;
 import org.springframework.stereotype.Service;
 
 import java.io.IOException;
-import java.net.URL;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -19,7 +18,7 @@ import java.util.Optional;
 public class WebScrapperService {
 
     private static final String URL = "https://www.gymnastics.sport/site/events/searchresults.php#filter";
-    private static final String DOWNLOAD_DIR = "downloads"; // Directory to save PDFs
+    private static final String DOWNLOAD_DIR = "src/main/resources/downloads"; // Directory to save PDFs
     private final ChromeDriver driver;
     private final PDFRepository pdfRepository;
 
@@ -27,7 +26,7 @@ public class WebScrapperService {
     public void scrape() {
         try {
             //the path to chromedriver
-            System.setProperty("webdriver.chrome.driver", "/Users/mirkaanstefanov/Downloads/chromedriver-mac-x64");
+            System.setProperty("webdriver.chrome.driver", "http://www.google.com/");
             // Open the URL
             driver.get(URL);
 
@@ -55,9 +54,9 @@ public class WebScrapperService {
                         String pdfUrl = pdfLink.getAttribute("href");
                         System.out.println("PDF Link: " + pdfUrl);
                         Optional<PDF> optionalPDF = pdfRepository.findByFileUrl(pdfUrl);
-                        if(!optionalPDF.isPresent()) {
+                        if (!optionalPDF.isPresent()) {
                             downloadFile(pdfUrl);
-//                            downloadAndSavePdf(pdfUrl);
+                            downloadAndSavePdf(pdfUrl);
                         }
                     } else {
                         System.out.println("No PDF Link found for this row.");
@@ -76,7 +75,7 @@ public class WebScrapperService {
     // Resolve relative URL to an absolute URL
     private void downloadFile(String fileURL) throws IOException {
         // Create the downloads directory if it doesn't exist
-        java.nio.file.Path downloadsDir = java.nio.file.Paths.get("downloads");
+        java.nio.file.Path downloadsDir = java.nio.file.Paths.get(DOWNLOAD_DIR);
         if (!java.nio.file.Files.exists(downloadsDir)) {
             java.nio.file.Files.createDirectories(downloadsDir);
         }
@@ -86,6 +85,9 @@ public class WebScrapperService {
         if (!fileName.endsWith(".pdf")) {
             fileName += ".pdf";
         }
+
+        // URL contains illegal characters for a file system on Windows (so the next method resolve didn't work for me)
+        fileName = fileName.replaceAll("[\\\\/:*?\"<>|]", "_");
 
         // Set the target path for the downloaded file
         java.nio.file.Path targetPath = downloadsDir.resolve(fileName);
@@ -107,20 +109,17 @@ public class WebScrapperService {
             fileName += ".pdf";
         }
 
-
-
-
-        java.net.URL url = new URL(fileURL);
-        byte[] pdfContent;
-        try (var inputStream = url.openStream()) {
-            pdfContent = inputStream.readAllBytes();
-        }
+//        java.net.URL url = new URL(fileURL);
+//        byte[] pdfContent;
+//        try (var inputStream = url.openStream()) {
+//            pdfContent = inputStream.readAllBytes();
+//        }
 
         // Save the PDF to the database
-        PDF pdf= new PDF();
+        PDF pdf = new PDF();
         pdf.setFileUrl(fileURL);
         pdf.setFileName(fileName);
-        pdf.setPdfContent(pdfContent);
+        pdf.setFilePath("src/main/resources/downloads/" + fileName);
         pdf.setCreatedAt(LocalDateTime.now());
         pdfRepository.save(pdf);
 
